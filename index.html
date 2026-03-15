@@ -567,7 +567,7 @@
                 }
             }
             
-            allDiaries.sort((a, b) => new Date(b.time) - new Date(a.time));
+            allDiaries.sort((a, b) => new Date(a.time) - new Date(b.time));
             
             if (allDiaries.length === 0) {
                 container.innerHTML = '<div class="no-diary">还没有日记，快去写第一篇吧！</div>';
