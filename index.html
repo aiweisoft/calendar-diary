@@ -165,7 +165,7 @@
         }
         .diary-content {
             width: 100%;
-            height: 300px;
+            height: 200px;
             border: 1px solid #ddd;
             border-radius: 10px;
             padding: 15px;
@@ -198,6 +198,11 @@
             padding: 20px;
             box-shadow: 0 10px 40px rgba(0,0,0,0.2);
         }
+        .diary-list h2 {
+            font-size: 1.2rem;
+            color: #333;
+            margin-bottom: 15px;
+        }
         .diary-item {
             padding: 15px;
             border-bottom: 1px solid #eee;
@@ -210,10 +215,19 @@
         .diary-item:hover {
             background: #f9f9f9;
         }
+        .diary-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
         .diary-item-date {
             font-weight: bold;
             color: #333;
-            margin-bottom: 8px;
+        }
+        .diary-item-time {
+            color: #999;
+            font-size: 12px;
         }
         .diary-item-preview {
             color: #666;
@@ -223,10 +237,48 @@
             white-space: nowrap;
         }
         .diary-item-delete {
-            float: right;
             color: #ff6b6b;
             cursor: pointer;
             font-size: 12px;
+            padding: 4px 8px;
+        }
+        .diary-item-delete:hover {
+            background: #ffeaea;
+            border-radius: 4px;
+        }
+        .day-diaries {
+            max-height: 200px;
+            overflow-y: auto;
+            margin-bottom: 15px;
+            border: 1px solid #eee;
+            border-radius: 10px;
+        }
+        .day-diary-item {
+            padding: 10px 15px;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .day-diary-item:last-child {
+            border-bottom: none;
+        }
+        .day-diary-item:hover {
+            background: #f9f9f9;
+        }
+        .day-diary-item.selected {
+            background: #f0f0ff;
+        }
+        .day-diary-time {
+            color: #999;
+            font-size: 12px;
+            margin-bottom: 4px;
+        }
+        .day-diary-preview {
+            color: #666;
+            font-size: 13px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
         .no-diary {
             text-align: center;
@@ -269,6 +321,7 @@
                 <div class="diary-panel">
                     <h2>日记内容</h2>
                     <div class="diary-date" id="diaryDate">请选择一个日期</div>
+                    <div id="dayDiariesContainer"></div>
                     <textarea class="diary-content" id="diaryContent" placeholder="在这里写下今天的日记..."></textarea>
                     <button class="save-btn" id="saveBtn">保存日记</button>
                 </div>
@@ -286,7 +339,33 @@
     <script>
         let currentDate = new Date();
         let selectedDate = null;
-        const diaryData = JSON.parse(localStorage.getItem('diaryData') || '{}');
+        let selectedDiaryId = null;
+        
+        function migrateData() {
+            const oldData = localStorage.getItem('diaryData');
+            if (oldData) {
+                try {
+                    const parsed = JSON.parse(oldData);
+                    const newData = {};
+                    for (const dateStr in parsed) {
+                        const content = parsed[dateStr];
+                        if (typeof content === 'string') {
+                            newData[dateStr] = [{
+                                id: Date.now() + Math.random(),
+                                time: new Date().toISOString(),
+                                content: content
+                            }];
+                        } else {
+                            newData[dateStr] = content;
+                        }
+                    }
+                    localStorage.setItem('diaryData', JSON.stringify(newData));
+                } catch (e) {}
+            }
+        }
+        migrateData();
+        
+        let diaryData = JSON.parse(localStorage.getItem('diaryData') || '{}');
 
         document.querySelectorAll('.tab-btn').forEach(btn => {
             btn.addEventListener('click', () => {
@@ -328,7 +407,7 @@
                     dayEl.className = 'today';
                 }
                 
-                if (diaryData[dateStr]) {
+                if (diaryData[dateStr] && diaryData[dateStr].length > 0) {
                     dayEl.classList.add('has-diary');
                 }
                 
@@ -342,13 +421,51 @@
             element.classList.add('selected');
             
             selectedDate = dateStr;
+            selectedDiaryId = null;
             document.getElementById('diaryDate').textContent = formatDate(dateStr);
-            document.getElementById('diaryContent').value = diaryData[dateStr] || '';
+            renderDayDiaries();
+        }
+        
+        function renderDayDiaries() {
+            const container = document.getElementById('dayDiariesContainer');
+            const diaries = diaryData[selectedDate] || [];
+            
+            if (diaries.length === 0) {
+                container.innerHTML = '';
+                document.getElementById('diaryContent').value = '';
+                return;
+            }
+            
+            container.innerHTML = `
+                <div class="day-diaries">
+                    ${diaries.map(d => `
+                        <div class="day-diary-item ${selectedDiaryId === d.id ? 'selected' : ''}" onclick="selectDayDiary('${d.id}')">
+                            <div class="day-diary-time">${formatTime(d.time)}</div>
+                            <div class="day-diary-preview">${d.content.substring(0, 30)}${d.content.length > 30 ? '...' : ''}</div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+        
+        function selectDayDiary(id) {
+            selectedDiaryId = id;
+            const diaries = diaryData[selectedDate] || [];
+            const diary = diaries.find(d => d.id == id);
+            if (diary) {
+                document.getElementById('diaryContent').value = diary.content;
+            }
+            renderDayDiaries();
         }
         
         function formatDate(dateStr) {
             const [year, month, day] = dateStr.split('-');
             return `${year}年${parseInt(month)}月${parseInt(day)}日`;
+        }
+        
+        function formatTime(isoString) {
+            const date = new Date(isoString);
+            return `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
         }
         
         function saveDiary() {
@@ -363,39 +480,67 @@
                 return;
             }
             
-            diaryData[selectedDate] = content;
+            if (!diaryData[selectedDate]) {
+                diaryData[selectedDate] = [];
+            }
+            
+            if (selectedDiaryId) {
+                const diaries = diaryData[selectedDate];
+                const index = diaries.findIndex(d => d.id == selectedDiaryId);
+                if (index !== -1) {
+                    diaries[index].content = content;
+                }
+            } else {
+                diaryData[selectedDate].push({
+                    id: Date.now() + Math.random(),
+                    time: new Date().toISOString(),
+                    content: content
+                });
+            }
+            
             localStorage.setItem('diaryData', JSON.stringify(diaryData));
             
             renderCalendar();
+            renderDayDiaries();
             alert('日记已保存！');
         }
 
         function renderDiaryList() {
             const container = document.getElementById('diaryListContainer');
-            const dates = Object.keys(diaryData).sort().reverse();
+            const allDiaries = [];
             
-            if (dates.length === 0) {
+            for (const dateStr in diaryData) {
+                if (diaryData[dateStr] && diaryData[dateStr].length > 0) {
+                    diaryData[dateStr].forEach(d => {
+                        allDiaries.push({ dateStr, ...d });
+                    });
+                }
+            }
+            
+            allDiaries.sort((a, b) => new Date(b.time) - new Date(a.time));
+            
+            if (allDiaries.length === 0) {
                 container.innerHTML = '<div class="no-diary">还没有日记，快去写第一篇吧！</div>';
                 return;
             }
             
-            container.innerHTML = dates.map(dateStr => {
-                const content = diaryData[dateStr];
-                const preview = content.length > 50 ? content.substring(0, 50) + '...' : content;
-                return `
-                    <div class="diary-item" onclick="goToDate('${dateStr}')">
-                        <span class="diary-item-delete" onclick="event.stopPropagation(); deleteDiary('${dateStr}')">删除</span>
-                        <div class="diary-item-date">${formatDate(dateStr)}</div>
-                        <div class="diary-item-preview">${preview.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</div>
+            container.innerHTML = allDiaries.map(d => `
+                <div class="diary-item" onclick="goToDate('${d.dateStr}', '${d.id}')">
+                    <div class="diary-item-header">
+                        <span class="diary-item-date">${formatDate(d.dateStr)}</span>
+                        <span class="diary-item-delete" onclick="event.stopPropagation(); deleteDiary('${d.dateStr}', '${d.id}')">删除</span>
                     </div>
-                `;
-            }).join('');
+                    <div class="diary-item-time">${formatTime(d.time)}</div>
+                    <div class="diary-item-preview">${d.content.substring(0, 50)}${d.content.length > 50 ? '...' : ''}</div>
+                </div>
+            `).join('');
         }
 
-        function goToDate(dateStr) {
+        function goToDate(dateStr, diaryId) {
             const [year, month, day] = dateStr.split('-');
             currentDate = new Date(year, month - 1, day);
             selectedDate = dateStr;
+            selectedDiaryId = diaryId;
             
             document.querySelectorAll('.tab-btn')[0].click();
             renderCalendar();
@@ -407,18 +552,33 @@
                         d.classList.add('selected');
                     }
                 });
+                renderDayDiaries();
+                const diaries = diaryData[dateStr] || [];
+                const diary = diaries.find(d => d.id == diaryId);
+                if (diary) {
+                    document.getElementById('diaryContent').value = diary.content;
+                }
             }, 100);
             
             document.getElementById('diaryDate').textContent = formatDate(dateStr);
-            document.getElementById('diaryContent').value = diaryData[dateStr] || '';
         }
 
-        function deleteDiary(dateStr) {
+        function deleteDiary(dateStr, diaryId) {
             if (confirm('确定要删除这篇日记吗？')) {
-                delete diaryData[dateStr];
+                const diaries = diaryData[dateStr];
+                const newDiaries = diaries.filter(d => d.id != diaryId);
+                if (newDiaries.length === 0) {
+                    delete diaryData[dateStr];
+                } else {
+                    diaryData[dateStr] = newDiaries;
+                }
                 localStorage.setItem('diaryData', JSON.stringify(diaryData));
                 renderDiaryList();
                 renderCalendar();
+                if (selectedDate === dateStr) {
+                    selectedDiaryId = null;
+                    renderDayDiaries();
+                }
             }
         }
         
