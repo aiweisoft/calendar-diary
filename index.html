@@ -577,10 +577,9 @@
             container.innerHTML = allDiaries.map(d => `
                 <div class="diary-item" onclick="goToDate('${d.dateStr}', '${d.id}')">
                     <div class="diary-item-header">
-                        <span class="diary-item-date">${formatDate(d.dateStr)}</span>
+                        <span class="diary-item-date">${formatDate(d.dateStr)} <span class="diary-item-time">${formatTime(d.time)}</span></span>
                         <span class="diary-item-delete" onclick="event.stopPropagation(); deleteDiary('${d.dateStr}', '${d.id}')">删除</span>
                     </div>
-                    <div class="diary-item-time">${formatTime(d.time)}</div>
                     <div class="diary-item-preview">${d.content.substring(0, 50)}${d.content.length > 50 ? '...' : ''}</div>
                 </div>
             `).join('');
