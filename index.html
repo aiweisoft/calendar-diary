@@ -201,6 +201,15 @@
         .save-btn.secondary:hover {
             background: #f0f0ff;
         }
+        .button-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .button-row .save-btn {
+            flex: 1;
+            margin-top: 0;
+        }
         .diary-list {
             background: white;
             border-radius: 20px;
@@ -330,10 +339,12 @@
                 <div class="diary-panel">
                     <h2>日记内容</h2>
                     <div class="diary-date" id="diaryDate">请选择一个日期</div>
-                    <div id="dayDiariesContainer"></div>
+                    <div class="button-row">
+                        <button class="save-btn secondary" id="newDiaryBtn">新建日记</button>
+                        <button class="save-btn" id="saveBtn">保存日记</button>
+                    </div>
                     <textarea class="diary-content" id="diaryContent" placeholder="在这里写下今天的日记..."></textarea>
-                    <button class="save-btn secondary" id="newDiaryBtn">新建日记</button>
-                    <button class="save-btn" id="saveBtn">保存日记</button>
+                    <div id="dayDiariesContainer"></div>
                 </div>
             </div>
         </div>
