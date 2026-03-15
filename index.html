@@ -309,6 +309,17 @@
             text-overflow: ellipsis;
             white-space: nowrap;
         }
+        .day-diary-delete {
+            float: right;
+            color: #ff6b6b;
+            cursor: pointer;
+            font-size: 12px;
+            padding: 2px 6px;
+        }
+        .day-diary-delete:hover {
+            background: #ffeaea;
+            border-radius: 4px;
+        }
         .no-diary {
             text-align: center;
             color: #999;
@@ -478,6 +489,7 @@
                 <div class="day-diaries">
                     ${diaries.map(d => `
                         <div class="day-diary-item ${selectedDiaryId === d.id ? 'selected' : ''}" onclick="selectDayDiary('${d.id}')">
+                            <span class="day-diary-delete" onclick="event.stopPropagation(); deleteDayDiary('${d.id}')">删除</span>
                             <div class="day-diary-time">${formatTime(d.time)}</div>
                             <div class="day-diary-preview">${d.content.substring(0, 30)}${d.content.length > 30 ? '...' : ''}</div>
                         </div>
@@ -618,6 +630,11 @@
                     renderDayDiaries();
                 }
             }
+        }
+
+        function deleteDayDiary(diaryId) {
+            if (!selectedDate) return;
+            deleteDiary(selectedDate, diaryId);
         }
         
         document.getElementById('prevMonth').addEventListener('click', () => {
