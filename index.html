@@ -192,6 +192,15 @@
         .save-btn:hover {
             background: #5568d3;
         }
+        .save-btn.secondary {
+            background: #fff;
+            color: #667eea;
+            border: 1px solid #667eea;
+            margin-right: 10px;
+        }
+        .save-btn.secondary:hover {
+            background: #f0f0ff;
+        }
         .diary-list {
             background: white;
             border-radius: 20px;
@@ -323,6 +332,7 @@
                     <div class="diary-date" id="diaryDate">请选择一个日期</div>
                     <div id="dayDiariesContainer"></div>
                     <textarea class="diary-content" id="diaryContent" placeholder="在这里写下今天的日记..."></textarea>
+                    <button class="save-btn secondary" id="newDiaryBtn">新建日记</button>
                     <button class="save-btn" id="saveBtn">保存日记</button>
                 </div>
             </div>
@@ -593,6 +603,17 @@
         });
         
         document.getElementById('saveBtn').addEventListener('click', saveDiary);
+        
+        document.getElementById('newDiaryBtn').addEventListener('click', () => {
+            if (!selectedDate) {
+                alert('请先选择一个日期');
+                return;
+            }
+            selectedDiaryId = null;
+            document.getElementById('diaryContent').value = '';
+            renderDayDiaries();
+            document.getElementById('diaryContent').focus();
+        });
         
         renderCalendar();
     </script>
