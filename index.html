@@ -83,6 +83,10 @@
             font-size: 1.2rem;
             color: #333;
         }
+        .calendar-header-right {
+            display: flex;
+            gap: 8px;
+        }
         .calendar-header button {
             background: #667eea;
             color: white;
@@ -330,7 +334,10 @@
                     <div class="calendar-header">
                         <button id="prevMonth">◀</button>
                         <h2 id="currentMonth">2024年1月</h2>
-                        <button id="nextMonth">▶</button>
+                        <div class="calendar-header-right">
+                            <button id="goToday">今天</button>
+                            <button id="nextMonth">▶</button>
+                        </div>
                     </div>
                     <div class="weekdays">
                         <div>日</div>
@@ -620,6 +627,11 @@
         
         document.getElementById('nextMonth').addEventListener('click', () => {
             currentDate.setMonth(currentDate.getMonth() + 1);
+            renderCalendar();
+        });
+        
+        document.getElementById('goToday').addEventListener('click', () => {
+            currentDate = new Date();
             renderCalendar();
         });
         
