@@ -17,7 +17,7 @@
             padding: 20px;
         }
         .container {
-            max-width: 800px;
+            max-width: 900px;
             margin: 0 auto;
         }
         .header {
@@ -29,12 +29,37 @@
             font-size: 2rem;
             margin-bottom: 10px;
         }
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .tab-btn {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        .tab-btn.active {
+            background: white;
+            color: #667eea;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
         .main {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 20px;
         }
-        @media (max-width: 600px) {
+        @media (max-width: 700px) {
             .main {
                 grid-template-columns: 1fr;
             }
@@ -167,10 +192,46 @@
         .save-btn:hover {
             background: #5568d3;
         }
-        .no-date {
-            color: #999;
+        .diary-list {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+        .diary-item {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .diary-item:last-child {
+            border-bottom: none;
+        }
+        .diary-item:hover {
+            background: #f9f9f9;
+        }
+        .diary-item-date {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 8px;
+        }
+        .diary-item-preview {
+            color: #666;
+            font-size: 14px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .diary-item-delete {
+            float: right;
+            color: #ff6b6b;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        .no-diary {
             text-align: center;
-            margin-top: 100px;
+            color: #999;
+            padding: 40px;
         }
     </style>
 </head>
@@ -180,29 +241,44 @@
             <h1>📔 日历日记</h1>
             <p>记录每一天的美好</p>
         </div>
-        <div class="main">
-            <div class="calendar">
-                <div class="calendar-header">
-                    <button id="prevMonth">◀</button>
-                    <h2 id="currentMonth">2024年1月</h2>
-                    <button id="nextMonth">▶</button>
+        
+        <div class="tabs">
+            <button class="tab-btn active" data-tab="write">写日记</button>
+            <button class="tab-btn" data-tab="list">日记列表</button>
+        </div>
+
+        <div id="write-tab" class="tab-content active">
+            <div class="main">
+                <div class="calendar">
+                    <div class="calendar-header">
+                        <button id="prevMonth">◀</button>
+                        <h2 id="currentMonth">2024年1月</h2>
+                        <button id="nextMonth">▶</button>
+                    </div>
+                    <div class="weekdays">
+                        <div>日</div>
+                        <div>一</div>
+                        <div>二</div>
+                        <div>三</div>
+                        <div>四</div>
+                        <div>五</div>
+                        <div>六</div>
+                    </div>
+                    <div class="days" id="days"></div>
                 </div>
-                <div class="weekdays">
-                    <div>日</div>
-                    <div>一</div>
-                    <div>二</div>
-                    <div>三</div>
-                    <div>四</div>
-                    <div>五</div>
-                    <div>六</div>
+                <div class="diary-panel">
+                    <h2>日记内容</h2>
+                    <div class="diary-date" id="diaryDate">请选择一个日期</div>
+                    <textarea class="diary-content" id="diaryContent" placeholder="在这里写下今天的日记..."></textarea>
+                    <button class="save-btn" id="saveBtn">保存日记</button>
                 </div>
-                <div class="days" id="days"></div>
             </div>
-            <div class="diary-panel">
-                <h2>日记内容</h2>
-                <div class="diary-date" id="diaryDate">请选择一个日期</div>
-                <textarea class="diary-content" id="diaryContent" placeholder="在这里写下今天的日记..."></textarea>
-                <button class="save-btn" id="saveBtn">保存日记</button>
+        </div>
+
+        <div id="list-tab" class="tab-content">
+            <div class="diary-list">
+                <h2>我的日记</h2>
+                <div id="diaryListContainer"></div>
             </div>
         </div>
     </div>
@@ -211,6 +287,18 @@
         let currentDate = new Date();
         let selectedDate = null;
         const diaryData = JSON.parse(localStorage.getItem('diaryData') || '{}');
+
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                btn.classList.add('active');
+                document.getElementById(btn.dataset.tab + '-tab').classList.add('active');
+                if (btn.dataset.tab === 'list') {
+                    renderDiaryList();
+                }
+            });
+        });
 
         function renderCalendar() {
             const year = currentDate.getFullYear();
@@ -248,7 +336,7 @@
                 daysContainer.appendChild(dayEl);
             }
         }
-        
+
         function selectDate(dateStr, element) {
             document.querySelectorAll('.days div').forEach(d => d.classList.remove('selected'));
             element.classList.add('selected');
@@ -270,11 +358,68 @@
             }
             
             const content = document.getElementById('diaryContent').value;
+            if (!content.trim()) {
+                alert('请输入日记内容');
+                return;
+            }
+            
             diaryData[selectedDate] = content;
             localStorage.setItem('diaryData', JSON.stringify(diaryData));
             
             renderCalendar();
             alert('日记已保存！');
+        }
+
+        function renderDiaryList() {
+            const container = document.getElementById('diaryListContainer');
+            const dates = Object.keys(diaryData).sort().reverse();
+            
+            if (dates.length === 0) {
+                container.innerHTML = '<div class="no-diary">还没有日记，快去写第一篇吧！</div>';
+                return;
+            }
+            
+            container.innerHTML = dates.map(dateStr => {
+                const content = diaryData[dateStr];
+                const preview = content.length > 50 ? content.substring(0, 50) + '...' : content;
+                return `
+                    <div class="diary-item" onclick="goToDate('${dateStr}')">
+                        <span class="diary-item-delete" onclick="event.stopPropagation(); deleteDiary('${dateStr}')">删除</span>
+                        <div class="diary-item-date">${formatDate(dateStr)}</div>
+                        <div class="diary-item-preview">${preview.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function goToDate(dateStr) {
+            const [year, month, day] = dateStr.split('-');
+            currentDate = new Date(year, month - 1, day);
+            selectedDate = dateStr;
+            
+            document.querySelectorAll('.tab-btn')[0].click();
+            renderCalendar();
+            
+            setTimeout(() => {
+                const days = document.querySelectorAll('.days div');
+                days.forEach(d => {
+                    if (d.textContent == day && !d.classList.contains('empty')) {
+                        d.classList.add('selected');
+                    }
+                });
+            }, 100);
+            
+            document.getElementById('diaryDate').textContent = formatDate(dateStr);
+            document.getElementById('diaryContent').value = diaryData[dateStr] || '';
+        }
+
+        function deleteDiary(dateStr) {
+            if (confirm('确定要删除这篇日记吗？')) {
+                delete diaryData[dateStr];
+                localStorage.setItem('diaryData', JSON.stringify(diaryData));
+                renderDiaryList();
+                renderCalendar();
+            }
         }
         
         document.getElementById('prevMonth').addEventListener('click', () => {
