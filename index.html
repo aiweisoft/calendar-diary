@@ -54,27 +54,12 @@
         .tab-content.active {
             display: block;
         }
-        .main {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            align-items: start;
-        }
-        @media (max-width: 700px) {
-            .main {
-                grid-template-columns: 1fr;
-            }
-        }
-        .calendar {
-            background: white;
-            border-radius: 20px;
-            padding: 20px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
-        }
         .right-panels {
             display: flex;
             flex-direction: column;
             gap: 20px;
+            max-width: 800px;
+            margin: 0 auto;
         }
         .right-panels .diary-panel {
             width: 100%;
@@ -331,7 +316,7 @@
         </div>
 
         <div id="write-tab" class="tab-content active">
-            <div class="main">
+            <div class="right-panels">
                 <div class="calendar">
                     <div class="calendar-header">
                         <button id="prevMonth">◀</button>
@@ -349,21 +334,18 @@
                     </div>
                     <div class="days" id="days"></div>
                 </div>
+                <div class="diary-panel">
+                    <h2>日记内容</h2>
+                    <div class="diary-date" id="diaryDate">请选择一个日期</div>
+                    <div class="button-row">
+                        <button class="save-btn secondary" id="newDiaryBtn">新建日记</button>
+                        <button class="save-btn" id="saveBtn">保存日记</button>
+                    </div>
+                    <textarea class="diary-content" id="diaryContent" placeholder="在这里写下今天的日记..."></textarea>
                 </div>
-                <div class="right-panels">
-                    <div class="diary-panel">
-                        <h2>日记内容</h2>
-                        <div class="diary-date" id="diaryDate">请选择一个日期</div>
-                        <div class="button-row">
-                            <button class="save-btn secondary" id="newDiaryBtn">新建日记</button>
-                            <button class="save-btn" id="saveBtn">保存日记</button>
-                        </div>
-                        <textarea class="diary-content" id="diaryContent" placeholder="在这里写下今天的日记..."></textarea>
-                    </div>
-                    <div class="diary-panel">
-                        <h2>当天日记</h2>
-                        <div id="dayDiariesContainer"></div>
-                    </div>
+                <div class="diary-panel">
+                    <h2>当天日记</h2>
+                    <div id="dayDiariesContainer"></div>
                 </div>
             </div>
         </div>
