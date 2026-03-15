@@ -153,6 +153,11 @@
             padding: 20px;
             box-shadow: 0 10px 40px rgba(0,0,0,0.2);
         }
+        .right-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
         .diary-panel h2 {
             font-size: 1.2rem;
             color: #333;
@@ -336,15 +341,21 @@
                     </div>
                     <div class="days" id="days"></div>
                 </div>
-                <div class="diary-panel">
-                    <h2>日记内容</h2>
-                    <div class="diary-date" id="diaryDate">请选择一个日期</div>
-                    <div class="button-row">
-                        <button class="save-btn secondary" id="newDiaryBtn">新建日记</button>
-                        <button class="save-btn" id="saveBtn">保存日记</button>
+                </div>
+                <div class="right-panel">
+                    <div class="diary-panel">
+                        <h2>日记内容</h2>
+                        <div class="diary-date" id="diaryDate">请选择一个日期</div>
+                        <div class="button-row">
+                            <button class="save-btn secondary" id="newDiaryBtn">新建日记</button>
+                            <button class="save-btn" id="saveBtn">保存日记</button>
+                        </div>
+                        <textarea class="diary-content" id="diaryContent" placeholder="在这里写下今天的日记..."></textarea>
                     </div>
-                    <textarea class="diary-content" id="diaryContent" placeholder="在这里写下今天的日记..."></textarea>
-                    <div id="dayDiariesContainer"></div>
+                    <div class="diary-panel">
+                        <h2>当天日记</h2>
+                        <div id="dayDiariesContainer"></div>
+                    </div>
                 </div>
             </div>
         </div>
