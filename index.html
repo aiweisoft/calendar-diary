@@ -58,6 +58,7 @@
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 20px;
+            align-items: stretch;
         }
         @media (max-width: 700px) {
             .main {
@@ -69,6 +70,8 @@
             border-radius: 20px;
             padding: 20px;
             box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            display: flex;
+            flex-direction: column;
         }
         .calendar-header {
             display: flex;
@@ -160,9 +163,24 @@
         }
         .right-panel .diary-panel {
             flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+        }
+        .right-panel .diary-panel h2 {
+            flex-shrink: 0;
+        }
+        .right-panel .diary-panel > *:not(h2):not(.diary-date) {
+            flex: 1;
         }
         .right-panel .diary-content {
-            height: 150px;
+            flex: 1 !important;
+            min-height: 80px;
+        }
+        .right-panel .day-diaries {
+            flex: 1;
+            min-height: 0;
+            max-height: none;
         }
         .diary-panel h2 {
             font-size: 1.2rem;
